@@ -1,26 +1,63 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { CreateMediaDto } from './dto/create-media.dto';
 import { UpdateMediaDto } from './dto/update-media.dto';
+import { MediasRepository } from './medias.repository';
+import { PublicationsRepository } from '../publications/publications.repository';
 
 @Injectable()
 export class MediasService {
-  create(createMediaDto: CreateMediaDto) {
-    return 'This action adds a new media';
+  constructor(
+    @Inject(forwardRef(() => PublicationsRepository))
+    private readonly publicationsRepository: PublicationsRepository,
+    private readonly mediasRepository: MediasRepository,
+  ) {}
+  async create(createMediaDto: CreateMediaDto) {
+    const { title, username } = createMediaDto;
+    if (!title || !username)
+      throw new HttpException('Bad Request!', HttpStatus.BAD_REQUEST);
+
+    const media = await this.mediasRepository.findMedia(title, username);
+    if (media) throw new ConflictException();
+    return await this.mediasRepository.createMidia(title, username);
   }
 
-  findAll() {
-    return `This action returns all medias`;
+  async findAll() {
+    return await this.mediasRepository.findAllMedias();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} media`;
+  async findOne(id: number) {
+    const media = await this.mediasRepository.findFirstById(id);
+    if (!media) throw new NotFoundException();
+    return media;
   }
 
-  update(id: number, updateMediaDto: UpdateMediaDto) {
-    return `This action updates a #${id} media`;
+  async update(id: number, updateMediaDto: UpdateMediaDto) {
+    const media = await this.mediasRepository.findFirstById(id);
+    if (!media) throw new NotFoundException();
+
+    const { title, username } = updateMediaDto;
+    if (!title || !username)
+      throw new HttpException('Bad Request!', HttpStatus.BAD_REQUEST);
+
+    const find = await this.mediasRepository.findMedia(title, username);
+    if (find) throw new ConflictException();
+    return await this.mediasRepository.updateMedia(id, title, username);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} media`;
+  async remove(id: number) {
+    const media = await this.findOne(id);
+    if (!media) throw new NotFoundException();
+    const publication = await this.publicationsRepository.findByMediaId(id);
+    if (publication) throw new ForbiddenException();
+    return await this.mediasRepository.deleteMedia(id);
   }
 }
