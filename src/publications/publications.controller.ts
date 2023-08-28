@@ -22,8 +22,8 @@ export class PublicationsController {
   }
 
   @Get()
-  findAll(@Query('published') published: boolean, @Query('after') after: Date) {
-    return this.publicationsService.findAll(published, after);
+  findAll(@Query() query?: { published: boolean; after: Date }) {
+    return this.publicationsService.findAll(query);
   }
 
   @Get(':id')

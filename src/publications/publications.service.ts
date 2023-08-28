@@ -37,22 +37,25 @@ export class PublicationsService {
     );
   }
 
-  async findAll(published: boolean, after: Date) {
-    if (!published && !after)
-      return await this.publicationsRepository.getPublications();
+  async findAll(query?) {
+    const publications = await this.publicationsRepository.getPublications();
+    console.log(query.published, query.after);
+    console.log(publications);
+    if (query.published === false && query.after) return publications;
 
-    if (published && !after) {
-      return await this.publicationsRepository.getPublishedPublications();
+    if (query.published && !query.after) {
+      return publications.map((pubs) => {
+        if (pubs.date >= new Date()) return pubs;
+      });
     }
 
-    if (!published && after) console.log(published);
-    console.log(new Date());
+    if (!query.published && query.after) console.log(query.published);
     return await this.publicationsRepository.getAfterPublications(
-      new Date(after),
+      new Date(query.after),
     );
 
     return await this.publicationsRepository.getPublishedAfterPublications(
-      new Date(after),
+      new Date(query.after),
     );
   }
 

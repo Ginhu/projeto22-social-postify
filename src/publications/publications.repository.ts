@@ -31,7 +31,7 @@ export class PublicationsRepository {
     return await this.prisma.publications.findMany({
       where: {
         date: {
-          lte: new Date(),
+          lte: new Date('2022-12-12').toISOString(),
         },
       },
       orderBy: { id: 'asc' },
@@ -42,7 +42,7 @@ export class PublicationsRepository {
     return await this.prisma.publications.findMany({
       where: {
         date: {
-          gt: after,
+          gt: new Date('2023-01-01'),
         },
       },
       orderBy: { id: 'asc' },
