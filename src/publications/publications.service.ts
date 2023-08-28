@@ -27,16 +27,33 @@ export class PublicationsService {
     const { mediaId, postId, date } = createPublicationDto;
     if (!mediaId || !postId || !date)
       throw new HttpException('Bad Request!', HttpStatus.BAD_REQUEST);
+
     const media = await this.mediasService.findOne(mediaId);
     const post = await this.postsService.findOne(postId);
     if (!media || !post) throw new NotFoundException();
+
     return await this.publicationsRepository.createPublication(
       createPublicationDto,
     );
   }
 
-  async findAll() {
-    return await this.publicationsRepository.getPublications();
+  async findAll(published: boolean, after: Date) {
+    if (!published && !after)
+      return await this.publicationsRepository.getPublications();
+
+    if (published && !after) {
+      return await this.publicationsRepository.getPublishedPublications();
+    }
+
+    if (!published && after) console.log(published);
+    console.log(new Date());
+    return await this.publicationsRepository.getAfterPublications(
+      new Date(after),
+    );
+
+    return await this.publicationsRepository.getPublishedAfterPublications(
+      new Date(after),
+    );
   }
 
   async findOne(id: number) {

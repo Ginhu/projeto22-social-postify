@@ -18,12 +18,46 @@ export class PublicationsRepository {
   }
 
   async getPublications() {
-    return this.prisma.publications.findMany();
+    return await this.prisma.publications.findMany();
   }
 
   async getPublicationById(id: number) {
-    return this.prisma.publications.findFirst({
+    return await this.prisma.publications.findFirst({
       where: { id: id },
+    });
+  }
+
+  async getPublishedPublications() {
+    return await this.prisma.publications.findMany({
+      where: {
+        date: {
+          lte: new Date(),
+        },
+      },
+      orderBy: { id: 'asc' },
+    });
+  }
+
+  async getAfterPublications(after: Date) {
+    return await this.prisma.publications.findMany({
+      where: {
+        date: {
+          gt: after,
+        },
+      },
+      orderBy: { id: 'asc' },
+    });
+  }
+
+  async getPublishedAfterPublications(after: Date) {
+    return await this.prisma.publications.findMany({
+      where: {
+        date: {
+          lte: new Date(),
+          gte: after,
+        },
+      },
+      orderBy: { id: 'asc' },
     });
   }
 

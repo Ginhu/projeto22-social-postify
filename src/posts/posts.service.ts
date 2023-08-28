@@ -39,6 +39,8 @@ export class PostsService {
   }
 
   async update(id: number, updatePostDto: UpdatePostDto) {
+    const post = await this.findOne(id);
+    if (!post) throw new NotFoundException();
     return await this.postsRepository.updatePost(id, updatePostDto);
   }
 
